@@ -1,0 +1,71 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<mpi.h>
+
+ 
+
+int main(int argc,char** argv)
+{
+    int rank,size;
+    MPI_Status s;
+    MPI_Init(&argc,&argv);
+    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    MPI_Comm_size(MPI_COMM_WORLD,&size);
+    int n,i,sum1=0,sum2=0,sum=0;
+    int a[20],b[20];
+    if(rank==0)
+    {
+        printf("rank=%d\n",rank);
+        printf("enter the number of elements:\n");
+        scanf("%d",&n);
+        printf("Enter the elements:\n");
+        for(i=0;i<n;i++)
+            scanf("%d",&a[i]);
+        MPI_Send(&n,1,MPI_INT,1,0,MPI_COMM_WORLD);
+        if(n%2==0)
+        {
+            MPI_Send(&a[n/2],(n/2),MPI_INT,1,1,MPI_COMM_WORLD);
+            for(i=0;i<(n/2);i++)
+            {
+                sum1+=a[i];
+            }
+        }
+        else
+        {
+            MPI_Send(&a[n/2],(n/2)+1,MPI_INT,1,1,MPI_COMM_WORLD);
+            for(i=0;i<(n/2);i++)
+            {
+                sum1+=a[i];    
+            }
+        }
+        printf("sum1=%d\n",sum1);
+        MPI_Recv(&sum2,1,MPI_INT,1,3,MPI_COMM_WORLD,&s);
+        sum=sum1+sum2;
+        printf("%d\n",sum);
+    }
+    else
+    {
+        MPI_Recv(&n,1,MPI_INT,0,0,MPI_COMM_WORLD,&s);
+        if(n%2==0)
+        {
+            MPI_Recv(&b[n/2],(n/2),MPI_INT,0,1,MPI_COMM_WORLD,&s);
+            for(i=0;i<(n/2);i++)
+            {
+                sum2+=b[i];
+            }
+        }
+    
+        else
+        {
+            MPI_Recv(&b[n/2],(n/2)+1,MPI_INT,0,1,MPI_COMM_WORLD,&s);
+            for(i=0;i<(n/2)+1;i++)
+            {
+                sum2+=b[i];
+            }
+        }
+        printf("sum1=%d\n",sum1);
+        MPI_Send(&sum2,1,MPI_INT,0,2,MPI_COMM_WORLD);
+    }
+    MPI_Finalize();
+    return 0;
+}
